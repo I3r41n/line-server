@@ -13,10 +13,16 @@ System act as a network server that serves individual lines of an immutable text
   3 - The line is valid ASCII (e.g. not Unicode).
 
 ## Questions to answer
-1. How does your system work? (if not addressed in comments in source)
-2. How will your system perform with a 1 GB file? a 10 GB file? a 100 GB file?
-3. How will your system perform with 100 users? 10000 users? 1000000 users?
-4. What documentation, websites, papers, etc did you consult in doing this assignment?
-5. What third-party libraries or other tools does the system use? How did you choose each library or framework you used?
-6. How long did you spend on this exercise? If you had unlimited more time to spend on this, how would you spend it and how would you prioritize each item?
-7. If you were to critique your code, what would you have to say about it?
+### 1. How does your system work? (if not addressed in comments in source)
+### 2. How will your system perform with a 1 GB file? a 10 GB file? a 100 GB file?
+### 3. How will your system perform with 100 users? 10000 users? 1000000 users?
+### 4. What documentation, websites, papers, etc did you consult in doing this assignment?
+### 5. What third-party libraries or other tools does the system use? How did you choose each library or framework you used?
+  * _Docker_ - To containerize my application and make sure there aren't SO differences 
+  * _Node_ - No special reason apart that I been using it for a bit now (it probably isn't the best tool for the job)
+  * _Yarn_ - I find Yarn faster than NPM and the usage of Yarn lock is pretty straight forward (although NPM now has the same funcionality I still haven't return to it)
+  * _Typescript_ - As Node/Javascript it been my professional tool for a while now, and if i'm gonna do it on Node/Javascript it is a mandatory requirement for me.
+  * _Express_ - Node most used web framework for Node. The mainly reason is familiarity and being an non oficial Node Standard 
+  * _Jest_ - TDD is a way of work that i'm a strong supporter and Jest has became my favorite testing environment on Javascript development.
+### 6. How long did you spend on this exercise? If you had unlimited more time to spend on this, how would you spend it and how would you prioritize each item?
+### 7. If you were to critique your code, what would you have to say about it?
