@@ -1,6 +1,17 @@
 # line-server
 System act as a network server that serves individual lines of an immutable text file over the network to clients using a simple REST API
 
+## Requirements
+- API ENDPOINT - GET /lines/<line index> : Returns an HTTP status of 200 and the text of the requested line or an HTTP 413 status if the requested line is beyond the end of the file.
+- Multiple simultaneous clients.
+- Perform well for small and large files.
+- Perform well as the number of GET requests per unit time increases.
+- Avoid putting the file contents into a database
+- The file maybe pre-process and has the following properties
+  1 - Each line is terminated with a newline ("\n")
+  2 - Any given line will fit into memory.
+  3 - The line is valid ASCII (e.g. not Unicode).
+
 ## Questions to answer
 1. How does your system work? (if not addressed in comments in source)
 2. How will your system perform with a 1 GB file? a 10 GB file? a 100 GB file?
