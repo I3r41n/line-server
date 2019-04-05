@@ -12,11 +12,22 @@ System act as a network server that serves individual lines of an immutable text
   2 - Any given line will fit into memory.
   3 - The line is valid ASCII (e.g. not Unicode).
 
+## Thought Process
+- The solution should be stateless so we could scale horizontally (in a real environment, it would clearly be a cluster being a load balancer to respond to this .. scaling with the request increase/decrease
+- Even without the database, an index of some sort is needed to rapidly find the content to return to the request 
+- Two ideas for the preprocessment/data lookup:
+  1. Slip the N lines file into N files with 1 line where the name will be the line number.
+  2. Locate the '\n' chars and store their position, finding a way to seek its position without loading the whole file into memory
+- The first idea sounds a pretty naive approach on my side, having more files will take more space and more filepointers at a time, furthermore I think it is worse I/O wise (need to check this..)
+- The second will require to load in memory an array (each position is the line..don't forget it 0 base :)), so N memory positions for an N line file.. In ES6, the Number.MAX_SAFE_INTEGER is 9007199254740991 ... should be enough :). 
+- The preprocessment will require to load the file to memory.. ideally it will be as a stream so it isn't full loaded at the same time.. chunks please
+
 ## Questions to answer
 ### 1. How does your system work? (if not addressed in comments in source)
 ### 2. How will your system perform with a 1 GB file? a 10 GB file? a 100 GB file?
 ### 3. How will your system perform with 100 users? 10000 users? 1000000 users?
 ### 4. What documentation, websites, papers, etc did you consult in doing this assignment?
+  * To remind myself to use stream - https://stackabuse.com/read-files-with-node-js/
 ### 5. What third-party libraries or other tools does the system use? How did you choose each library or framework you used?
   * _Docker_ - To containerize my application and make sure there aren't SO differences 
   * _Node_ - No special reason apart that I been using it for a bit now (it probably isn't the best tool for the job)
