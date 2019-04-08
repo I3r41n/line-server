@@ -1,9 +1,11 @@
-import { app } from './app'
+import { appBuilder } from './app'
 
-const server = app.listen(app.get('port'), () => {
-    console.log(
-      `App is running on http://localhost:${app.get('port')} in ${app.get('env')} mode`,
-    )
+const server = appBuilder('').then(app => {
+  app.listen(app.get('port'), () => {
+      console.log(
+        `App is running on http://localhost:${app.get('port')} in ${app.get('env')} mode`,
+      )
+    })
   })
 
-  export default server
+export default server
