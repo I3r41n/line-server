@@ -8,9 +8,9 @@ System act as a network server that serves individual lines of an immutable text
 - Perform well as the number of GET requests per unit time increases.
 - Avoid putting the file contents into a database
 - The file maybe pre-process and has the following properties
-  1 - Each line is terminated with a newline ("\n")
-  2 - Any given line will fit into memory.
-  3 - The line is valid ASCII (e.g. not Unicode).
+    1 - Each line is terminated with a newline ("\n")
+    2 - Any given line will fit into memory.
+    3 - The line is valid ASCII (e.g. not Unicode).
 
 ## Thought Process
 - The solution should be stateless so we could scale horizontally (in a real environment, it would clearly be a cluster being a load balancer to respond to this .. scaling with the request increase/decrease
@@ -25,19 +25,23 @@ System act as a network server that serves individual lines of an immutable text
 
 ## Questions to answer
 ### 1. How does your system work? (if not addressed in comments in source)
-  * The system can be built using the build.sh script, that will create a docker image with the app. 
-  * The run.sh accepts a file name, that is expected to be under the ~/Data folder. The script reads from the filename and passes it to the docker run command. 
-  * The docker command creates a volume to the previously refered folder (so it is required to place the file to read under the ~/data folder), setting an enviromnent variable for node with the /data/file value. 
-  * The file is preprocessed creating an in memory array with the '\n' positions in the file. 
-  * When a request is made to the route '/lines/<line index>' the line position is looked up in the array (since the array 0 position has the value 0 to facilitate the math, the line index is the correct position for end of the line).
+  * The system can be built using the build.sh script, which will create a docker image with the app. 
+  * The run.sh accepts a filename, that is expected to be under the ~/data directory. The script reads from the filename and passes it to the docker run command. 
+  * The docker command creates a volume to ~/data directory (so it is required to place the file to read under that directory), setting an enviromnent variable for node with the /data/<filename> value. 
+  * The file needs to exist on the ~/data folder, this was a design restriction to ensure docker is able to mount the volume so that the container can access the file
+  * The file is preprocessed creating an in memory array with the '\n' positions in the file, or in other words the final position of the Nth line is in the Nth position of the array.
+  * When a request is made to the route '/lines/<line index>', the line position is looked up in the array (since the array 0 position has the value 0, the line index is the correct position for end of the line).
   * With the start and end position, a stream from the file is created with just the line content and returned directly to the http response.
   * If the position is higher than the array length an 413 is returned.
   
 ### 2. How will your system perform with a 1 GB file? a 10 GB file? a 100 GB file?
-  * Following the information I found (see question 4) and the way streams work (reading chunk by chunk) and specially how event-stream works, reading the file seems to be more or less a non issue. Of course the preprocessing would take longer with bigger files, but since it's done before the server is up it wouldn't impact the performance. The number of lines on another hand, will have a direct impact on the memory used since we store each '\n' positions but the access to those position is O(1) so it's a cheap trade to do (unless we have a file with only newlines, that would consume all of the memory).
+  * Following the information I researched (see question 4), the way streams work (reading chunk by chunk) and specially how event-stream works, reading the file seems to be more or less a non issue. Of course, the preprocessing would take longer with bigger files, but since it's done before the server is up it wouldn't impact the performance.
+  * The number of lines on another hand, will have a direct impact on the memory used, since we store each '\n' position but the access to those position is O(1) so it's a cheap trade to do (unless we have a file with only newlines, that would consume all of the memory and break the system...).
   
 ### 3. How will your system perform with 100 users? 10000 users? 1000000 users?
-  * Following my experience and some reading and knowing the system doesn't do any blocking operation it is possible that the system could handle 1000000 concurrents requests (it would may require some twinking on the memory heap for node). Having the memory well configured would allow Node to properly use the event loop to support tens of thousands of concurrent connections (which I admit, I haven't done). Another thing to take into consideration is the file access. Since it's reading it can be concurrent and since we are using stream and async logic it shoud accept a large number of concurrency. Although the time taken to having access to the file would be increasing as the concurrent users increase. Another thing to bear in mind is that the disk I/O can and probably be a bottleneck on the reading.
+  * Following my experience, some reading and knowing that the system doesn't do any blocking operations, it is possible that the system can handle 1000000 concurrents requests (with some tweaking on the memory heap for Node). Having the memory well configured would allow Node to properly use the event loop handling tens of thousands of concurrent connections (which I admit, I haven't done for this exercise). 
+  * Another subject to take into consideration is the file access. Since it's reading it can be concurrent and with the stream and async logic usage, it shoud accept a large number of concurrent readers. Although the time taken to access the file would be increasing as the concurrent users increase. 
+  * Another thing to bear in mind is that the disk I/O can and probably be a bottleneck on the reading.
 
 ### 4. What documentation, websites, papers, etc did you consult in doing this assignment?
   * To remind myself to use stream - https://stackabuse.com/read-files-with-node-js/ and https://medium.freecodecamp.org/node-js-streams-everything-you-need-to-know-c9141306be93
@@ -57,11 +61,14 @@ System act as a network server that serves individual lines of an immutable text
   
 ### 6. How long did you spend on this exercise? If you had unlimited more time to spend on this, how would you spend it and how would you prioritize each item?
   * I spent some time studying the best way to read a file in Node (at least what appears to be the best way), probably around 4 non consecutive hours. 
-  * For the solution design around 4 hours (although in between during my regular day to day, it was lurking on the back of my mind.
+  * For the solution design around 2 hours (although in between during my regular day to day, it was lurking on the back of my mind.
   * For the coding part I'd say another 8 hours where some time was lost between the streams and some Docker/Node debugging.
-  * As for the writing, I'd say around 3 hours maybe 4 (documentation isn't one of my best suits).
-  * So maybe a total of 19 - 20 hours in total
-  * As for what I would do with unlimited time, I'd spend some time doing perfomance testing to verify the assumptions for questions 2 and 3. Then I'd prioritize the improvements according to it, where i'm sure a cache with the last N requests would must certain appear. Further more i'd improve the file validation and try to improve the stream usage (cause I'm sure it isn't that good). Another improvement would be with the state of the app (the in memory array), i'd look for something that could be stateless.. so scaling this would be easier
+  * As for the writing, I'd say around 2 hours maybe 3 (documentation isn't one of my best suits).
+  * So maybe a total of 16 - 17 hours in total (although it isn't probably measured since I did this during my free time which involves a 3 year old)
+  * As for what I would do with unlimited time:
+    1. I'd spend some time doing performance testing to verify the assumptions refered in questions 2 and 3. 
+    2. Then I'd prioritize the improvements according to it, where i'm sure a cache with the last N requests would must certain appear.
+    3. Furthermore, i'd improve the file validation and try to improve the stream usage (cause I'm sure it isn't that good).     4. Another improvement would be with the state of the app (the in memory array), i'd look for something that could be stateless.. so scaling would be easier
 
 ### 7. If you were to critique your code, what would you have to say about it? 
   1. The archicteture - knowing it wasn't a production ready code and the goal of the exercise, I didn't took much tought about the archicteture. On a real production ready system, I would have separated the modules better and never call the logic directly in the router (for instance, i'd use an Adapter/Port archicteture)
